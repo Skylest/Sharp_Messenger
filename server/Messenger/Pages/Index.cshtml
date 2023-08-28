@@ -1,0 +1,114 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class = "app">
+    <div class="sidebar">
+        <div class = "header">
+            <a href="#" id="create_channel" data-toggle="modal" data-target="#create_channel_modal">
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+        <ul class="channels list-unstyled" id="channels_list" data-bind="foreach: channels">
+            <li><a href="#" data-bind="text: $data.Name, attr: { 'data_channelId': $data.Id }, click: $parent.joinChannel.bind($data), css: { active: $root.joinedChannel() == $data.Name()}"></a></li>
+        </ul>
+        <div class="profile">
+            <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
+                <button type="submit" class="btn-sign-out"><i class="fas fa-sign-out-alt"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-content" data-bind="visible: joinedChannel().length == 0">
+        <span class="m-auto">
+        </span>
+    </div>
+
+     <div class="main-content" data-bind="visible: joinedChannel().length > 0">
+        <div class="header">
+            <h5 id="joinedChannel" data-bind="text: joinedChannel()">Lobby</h5>
+            <button type="button" class="btn btn-link" data-toggle="modal" data-target="#remove_channel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chat-body">
+            <ul class="list-unstyled" data-bind="foreach: messages">
+                <li>
+                    <div class="chat-message d-flex">
+                        <div class="message-content d-flex flex-column">
+                            <div class="d-flex justify-content-between">
+                                <span class="author" data-bind="text:$data.From()"></span>
+                                <span class="timestamp">
+                                    <i class="far fa-clock"></i>
+                                    <span data-bind="text:$data.Timestamp()"></span>
+                                </span>
+                            </div>
+                            <span class="content" data-bind="html:$data.Content()"></span>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="chat-input">
+            <input id="chat-message" type="text" value="" data-bind="value:message, valueUpdate: 'afterkeydown', event: { keypress: onEnter }" placeholder="Type message here" />
+            <div class="actions d-flex align-items-center">
+                <form method="post" asp-action="Upload" asp-controller="Upload" enctype="multipart/form-data" id="uploadForm">
+                    <label for="UploadedFile" class="custom-file-upload">
+                        <i class="far fa-image"></i>
+                    </label>
+                    <input type="hidden" name="ChannelId" data-bind="value: joinedChannelId()" />
+                    <input type="file" id="UploadedFile" name="File" accept=".jpg,.jpeg,.png" data-bind="event: {change: uploadFile}">
+                </form>
+                <i class="fas fa-paper-plane" id="btn-send-message" data-bind="click: sendMessage"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="remove_channel" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Channel</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this Channel?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal" data-bind="click: deleteChannel">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="create_channel_modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Channel</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" id="channelName" placeholder="Channel name">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" data-bind="click: createChannel">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/knockout/knockout-latest.min.js"></script>
+    <script src="~/js/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/chat.js" asp-append-version="true"></script>
+}
